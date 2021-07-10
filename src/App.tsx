@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./App.css";
+import InputMask from "react-input-mask";
 import { FinalScore } from "./utils/utils";
 
 const App: React.FC = () => {
@@ -7,7 +8,7 @@ const App: React.FC = () => {
     ageInput: 0,
     pushUpInput: 0,
     sitUpInput: 0,
-    runInput: "",
+    runInput: "00:00",
     gender: "male",
     cantWalk: false,
     cantRun: false,
@@ -31,6 +32,7 @@ const App: React.FC = () => {
   const handleScoring = (scoreValues: typeof state) => {
     const pushupInput = scoreValues.pushUpInput;
     const situpInput = scoreValues.sitUpInput;
+    const runInput = scoreValues.runInput;
 
     const cantPushUp = scoreValues.cantPushUp;
     const cantSitUp = scoreValues.cantSitUp;
@@ -41,8 +43,8 @@ const App: React.FC = () => {
       cantPushUp,
       situpInput,
       cantSitUp,
-      0,
-      true
+      runInput,
+      cantRun
     );
     setState({
       ...state,
@@ -67,8 +69,15 @@ const App: React.FC = () => {
     });
   };
 
-  const handleRunInputMask = (value: string): number => {
-    return 0;
+  const runInputFieldMaskOptions = {
+    mask: "Mm:Ss",
+
+    formatChars: {
+      "M": "[0-5]",
+      "m": "[0-9]",
+      "S": "[0-5]",
+      "s": "[0-9]",
+    },
   };
 
   const ProfileForm = ({ state }: { state: State }) => {
@@ -80,7 +89,7 @@ const App: React.FC = () => {
               className="form-check-input"
               type="checkbox"
               id="flexCheckDefault"
-              value={state.cantWalk ? "on" : "off"}
+              checked={state.cantWalk}
               onChange={() =>
                 handleFormInputChange(!state.cantWalk, "cantWalk")
               }
@@ -94,7 +103,7 @@ const App: React.FC = () => {
               className="form-check-input"
               type="checkbox"
               id="flexCheckChecked"
-              value={state.cantRun ? "on" : "off"}
+              checked={state.cantRun}
               onChange={() => handleFormInputChange(!state.cantRun, "cantRun")}
             />
             <label className="form-check-label" htmlFor="flexCheckChecked">
@@ -108,7 +117,7 @@ const App: React.FC = () => {
               className="form-check-input"
               type="checkbox"
               id="flexCheckChecked"
-              value={state.cantPushUp ? "on" : "off"}
+              checked={state.cantPushUp}
               onChange={() =>
                 handleFormInputChange(!state.cantPushUp, "cantPushUp")
               }
@@ -122,7 +131,7 @@ const App: React.FC = () => {
               className="form-check-input"
               type="checkbox"
               id="flexCheckChecked"
-              value={state.cantSitUp ? "on" : "off"}
+              checked={state.cantSitUp}
               onChange={() =>
                 handleFormInputChange(!state.cantSitUp, "cantSitUp")
               }
@@ -202,7 +211,7 @@ const App: React.FC = () => {
             <label htmlFor="floatingPassword">Sit ups</label>
           </div>
           <div className="form-floating">
-            <input
+            {/* <input
               type="text"
               className="form-control"
               id="floatingPassword"
@@ -214,7 +223,26 @@ const App: React.FC = () => {
                   "runInput"
                 )
               }
-            />
+            /> */}
+            <InputMask
+              mask="Mm:Ss"
+              value={state.runInput}
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              formatChars={runInputFieldMaskOptions.formatChars}
+              onChange={(e) =>
+                handleFormInputChange(e.target.value, "runInput")
+              }
+            >
+              {() => (
+                <input
+                  type="text"
+                  className="form-control"
+                  id="floatingPassword"
+                  placeholder="Run Time"
+                />
+              )}
+            </InputMask>
             <label htmlFor="floatingPassword">Run Time</label>
           </div>
         </div>
@@ -274,9 +302,6 @@ const App: React.FC = () => {
             className="progress-bar progress-bar-striped bg-success"
             role="progressbar"
             style={{ width: `${state.finalScore}%` }}
-            // ariaValuenow="25"
-            // ariaValuemin="0"
-            // ariaValuemax="100"
           />
         </div>
       </div>

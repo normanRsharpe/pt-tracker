@@ -1,4 +1,5 @@
 import _ from "lodash";
+import moment from "moment";
 
 const ageGetter = (ageInput: number): string => {
   const ageRangeMap = [
@@ -128,16 +129,47 @@ const sitUpsGetter = (sitUpInput: number, SitUpWaiver: boolean): number => {
   return sitUpsScore;
 };
 
-const RunTimeGetter = (RunTime: number, RunWaiver: boolean): number => {
-  let runTimeScore = 0;
-  if (RunWaiver) {
-    runTimeScore = 0.0;
-  }
-  if (RunTime > 1) {
+const RunTimeGetter = (runTime: string, runWaiver: boolean): number => {
+  const format = "mm:ss";
+  const runTimeParsed = moment(runTime, format);
+  let runTimeScore;
+
+  const runTimeScoreMap = [
+    { time: moment("09:13", format), score: 60 },
+    { time: moment("09:35", format), score: 59 },
+    { time: moment("09:46", format), score: 58.5 },
+    { time: moment("09:59", format), score: 58 },
+    { time: moment("10:11", format), score: 57.5 },
+    { time: moment("10:24", format), score: 57 },
+    { time: moment("10:38", format), score: 56.5 },
+    { time: moment("10:52", format), score: 56 },
+    { time: moment("11:07", format), score: 55.5 },
+    { time: moment("11:23", format), score: 55 },
+    { time: moment("11:39", format), score: 54.5 },
+    { time: moment("11:57", format), score: 54 },
+    { time: moment("12:15", format), score: 53.5 },
+    { time: moment("12:34", format), score: 52 },
+    { time: moment("12:54", format), score: 50.5 },
+    { time: moment("13:15", format), score: 49.0 },
+    { time: moment("13:37", format), score: 46.5 },
+    { time: moment("14:01", format), score: 44.0 },
+    { time: moment("14:26", format), score: 41.0 },
+    { time: moment("14:53", format), score: 38.0 },
+    { time: moment("15:21", format), score: 35.0 },
+    { time: moment("15:51", format), score: 0 },
+  ];
+
+  if (runWaiver || runTimeParsed.isBefore(moment("02:00", format))) {
+    console.log("Waiver");
     runTimeScore = 0;
-  }
-  if (RunTime === 2) {
-    runTimeScore = 60.0;
+  } else if (runTimeParsed.isSameOrAfter(runTimeScoreMap[21].time)) {
+    runTimeScore = 0;
+  } else {
+    const runTimeScoreObj = runTimeScoreMap.find((obj) => {
+      console.log(obj.time.isSameOrAfter(runTimeParsed));
+      return obj.time.isSameOrAfter(runTimeParsed);
+    });
+    runTimeScore = runTimeScoreObj ? runTimeScoreObj.score : 0;
   }
   return runTimeScore;
 };
@@ -147,12 +179,16 @@ const FinalScore = (
   pushUpWaiver: boolean,
   sitUpInput: number,
   sitUpWaiver: boolean,
-  runTimeInput: number,
+  runTimeInput: string,
   runWaiver: boolean
 ): number => {
-  const firstScore = pushUpsGetter(pushUpInput, pushUpWaiver);
-  const secondScore = firstScore + sitUpsGetter(sitUpInput, sitUpWaiver);
-  let totalScore = secondScore + RunTimeGetter(runTimeInput, runWaiver);
+  const pushUpsScore = pushUpsGetter(pushUpInput, pushUpWaiver);
+  const sitUpsScore = sitUpsGetter(sitUpInput, sitUpWaiver);
+  const runTimeScore = RunTimeGetter(runTimeInput, runWaiver);
+
+  const firstScore = pushUpsScore;
+  const secondScore = firstScore + sitUpsScore;
+  let totalScore = secondScore + runTimeScore;
 
   if (pushUpWaiver && sitUpWaiver && runWaiver) {
     totalScore = 100;
